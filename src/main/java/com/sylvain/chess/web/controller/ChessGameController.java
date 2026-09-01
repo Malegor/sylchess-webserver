@@ -8,6 +8,7 @@ import com.sylvain.chess.web.players.WebInteractivePlayer;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,9 +36,9 @@ public class ChessGameController {
     this.blackPlayer = new WebInteractivePlayer(PlayerColor.BLACK, "Human Black", board, latch);
     // Run your existing Gameplay while loop on an independent thread
     new Thread(() -> {
-      gameplay.playGame(List.of(whitePlayer, blackPlayer));
+      this.gameplay.playGame(List.of(this.whitePlayer, this.blackPlayer));
     }).start();
-    broadcastState();
+    this.broadcastState();
   }
 
   @MessageMapping("/move")
@@ -47,17 +48,17 @@ public class ChessGameController {
     playerToMove.submitWebMove(pgnOrSanMove);
     // Wait a tiny moment for the engine thread to validate and update
     try { Thread.sleep(50); } catch (InterruptedException ignored) {}
-    broadcastState();
+    this.broadcastState();
   }
 
   private void broadcastState() {
-    final String currentFen = FenSaver.getPositionString(gameplay.getInfo(), gameplay.getBoard());
+    final String currentFen = FenSaver.getPositionString(this.gameplay.getInfo(), this.gameplay.getBoard());
     // Collect current turn active errors to display in React
-    final String activeError = whitePlayer.getLastErrorMessage().equals(" ")
-            ? blackPlayer.getLastErrorMessage()
-            : whitePlayer.getLastErrorMessage();
+    final String activeError = this.whitePlayer.getLastErrorMessage().equals(" ")
+            ? this.blackPlayer.getLastErrorMessage()
+            : this.whitePlayer.getLastErrorMessage();
     // Push layout information to React
-    messagingTemplate.convertAndSend("/topic/game-update", Optional.of(Map.of(
+    this.messagingTemplate.convertAndSend("/topic/game-update", Optional.of(Map.of(
             "fen", currentFen,
             "error", activeError
     )));

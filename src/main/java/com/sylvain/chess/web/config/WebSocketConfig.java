@@ -12,8 +12,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   public void registerStompEndpoints(StompEndpointRegistry registry) {
     // Allows React to connect to your backend
     registry.addEndpoint("/chess-socket")
-            .setAllowedOrigins("http://localhost:5173") // Vite React Default URL
-            .withSockJS();
+            .setAllowedOriginPatterns("*");
   }
 
   @Override
